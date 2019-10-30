@@ -1,0 +1,21 @@
+{
+  "name": "project-traffic-simulator",
+  "version": "1.0.0",
+  "description": "This is the project that drives traffic to students' class projects. Here are my goals:",
+  "main": "index.js",
+  "dependencies": {
+    "puppeteer": "^2.0.0",
+    "minimist": "^1.2.0",
+    "lib-r-math.js": "^1.0.86"
+  },
+  "devDependencies": {
+    "eslint": "^6.5.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Unlicense"
+}
