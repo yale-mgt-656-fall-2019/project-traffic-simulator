@@ -4,17 +4,21 @@
   "description": "This is the project that drives traffic to students' class projects. Here are my goals:",
   "main": "index.js",
   "dependencies": {
-    "puppeteer": "^2.0.0",
+    "lib-r-math.js": "^1.0.86",
     "minimist": "^1.2.0",
-    "lib-r-math.js": "^1.0.86"
+    "prettier": "^1.18.2",
+    "puppeteer": "^2.0.0"
   },
   "devDependencies": {
     "eslint": "^6.5.1",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2"
+    "eslint-plugin-import": "^2.18.2",
+    "prettier": "^1.18.2",
+    "jest": "^24.9.0",
+    "eslint-plugin-jest": "^23.0.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "Unlicense"
