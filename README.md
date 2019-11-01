@@ -28,3 +28,11 @@ Questions:
   JSON store? This would require migrations and some thought. Otherwise,
   I could use a local store to the app. I won't be putting grades into
   the class website.
+
+## How to run
+
+Something like the following:
+
+```
+env $(cat .env.660 | xargs) node ./run.js
+```

@@ -47,9 +47,37 @@ function shuffle(a) {
     return a;
 }
 
+async function getSubmissions(apiURL, jwt) {
+    const requestConfig = {
+        url:
+            '/rest/assignment_field_submissions?and=(assignment_slug.like.project*,assignment_field_slug.eq.app-url)&select=url:body,submission:assignment_submissions(id,team_nickname,assignment_slug):team_nickname',
+        baseURL: apiURL,
+        headers: {
+            Authorization: `Bearer ${jwt}`,
+        },
+    };
+    const response = await axios.request(requestConfig);
+    const rawSubmissions = response.data.map((s) => ({
+        url: s.url,
+        assignmentSlug: s.submission.assignment_slug,
+        teamNickname: s.submission.team_nickname,
+    }));
+    const submissionDict = {};
+    rawSubmissions.forEach((s) => {
+        const oldSub = submissionDict[s.teamNickname];
+        // TODO: don't just compare assignment slugs, compare the due
+        // dates of assignments.
+        if (!oldSub || oldSub.assignmentSlug < s.assignmentSlug) {
+            submissionDict[s.teamNickname] = s;
+        }
+    });
+    return Object.values(submissionDict);
+}
+
 module.exports = {
     firstOf,
     pingURLs,
     cleanURL,
     shuffle,
+    getSubmissions,
 };

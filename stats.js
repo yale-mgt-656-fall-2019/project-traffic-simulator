@@ -60,6 +60,12 @@ function choiceFromDirichlet(cand, dirDist, seed) {
     return undefined;
 }
 
+function dChoice(rawSeed, salt, cand, alpha) {
+    const seed = rawSeed + salt;
+    const dirichletDraw = seededDirichlet(seed, alpha, cand.length);
+    return choiceFromDirichlet(cand, dirichletDraw, seed);
+}
+
 function hashStringToInt(str) {
     let hash = 0;
     if (str.length === 0) return hash;
@@ -94,9 +100,16 @@ if (require.main === module) {
     }
 }
 
+function uChoice(arr) {
+    // Choice from uniform random, no seed
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
 module.exports = {
     choiceFromDirichlet,
     seededDirichlet,
     hashStringToInt,
     sum,
+    dChoice,
+    uChoice,
 };
