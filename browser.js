@@ -1,12 +1,13 @@
 const puppeteer = require('puppeteer');
-const validator = require('validator');
-const util = require('./util.js');
-const { hashStringToInt, dChoice, uChoice } = require('./stats.js');
+const {
+    dChoice,
+    uChoice
+} = require('./stats.js');
 
-if (!process.env.DEVELOPMENT && require.main === module) {
-    console.log = () => {};
-    console.debug = () => {};
-}
+// if (!process.env.DEVELOPMENT && require.main === module) {
+//     console.log = () => {};
+//     console.debug = () => {};
+// }
 
 async function takeScreenshot(page, path) {
     console.log('Saving screenshot to', path, 'for URL: ', page.url());
@@ -124,7 +125,7 @@ async function visitSite(
         'http://search.yale.edu/',
     ];
     const alpha = 1;
-    const referrer = dChoice(teamName, salt, referrers, alpha);
+    const referrer = dChoice(referrers, alpha, teamName, salt);
     const donationTextOptions = ['donate', 'support'];
     const donationPreference = dChoice(teamName, salt, donationTextOptions, alpha);
     await visitEventDetail(
@@ -164,6 +165,5 @@ async function runForURL(
 }
 
 module.exports = {
-    getVisitorProfile,
     runForURL,
 };

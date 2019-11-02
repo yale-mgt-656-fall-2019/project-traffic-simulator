@@ -1,3 +1,5 @@
+/* eslint indent: [2, 4, {"SwitchCase": 1}] */
+
 'use strict';
 
 const {
@@ -5,7 +7,9 @@ const {
     rng: {
         KnuthTAOCP2002,
         timeseed,
-        normal: { AhrensDieter },
+        normal: {
+            AhrensDieter,
+        },
     },
 } = require('lib-r-math.js');
 
@@ -33,38 +37,14 @@ function randomDirichlet(gamma, alphas) {
     return randGammas.map((x) => x / gammaSum);
 }
 
-function seededDirichlet(seed, alpha, numDimensions) {
+function seededDirichlet(alpha, numDimensions, seed) {
     // Generate an array of alphas with the specified number of dimensions
     const alphas = [...Array(numDimensions)].map(() => alpha);
-    const mt = new KnuthTAOCP2002(seed);
+    const mt = new KnuthTAOCP2002(normalizeSeed(seed));
     const customGamma = Gamma(new AhrensDieter(mt));
     return randomDirichlet(customGamma, alphas);
 }
 
-function choiceFromDirichlet(cand, dirDist, seed) {
-    if (cand.length !== dirDist.length) {
-        throw new Error('cand array and dirDist array must have equal length');
-    }
-    const theSeed = typeof seed === 'number' ? seed : timeseed();
-    const mt = new KnuthTAOCP2002(theSeed);
-    const x = mt.unif_rand(1);
-    let prevSum = 0;
-    let nextSum = 0;
-    for (let index = 0; index < dirDist.length; index += 1) {
-        nextSum += dirDist[index];
-        if (x > prevSum && x < nextSum) {
-            return cand[index];
-        }
-        prevSum = nextSum;
-    }
-    return undefined;
-}
-
-function dChoice(rawSeed, salt, cand, alpha) {
-    const seed = rawSeed + salt;
-    const dirichletDraw = seededDirichlet(seed, alpha, cand.length);
-    return choiceFromDirichlet(cand, dirichletDraw, seed);
-}
 
 function hashStringToInt(str) {
     let hash = 0;
@@ -79,17 +59,74 @@ function hashStringToInt(str) {
     return hash;
 }
 
+function ensureNumber(s) {
+    switch (typeof s) {
+        case 'number':
+            return s;
+        case 'string':
+            return hashStringToInt(s);
+        default:
+            throw Error('Invalid type for ensureNumber');
+    }
+}
+
+function normalizeSeed(seed) {
+    return typeof seed === 'undefined' ? timeseed() : ensureNumber(seed);
+}
+
+function addSaltToSeed(seed, salt) {
+    const theSeed = normalizeSeed(seed);
+    if (salt) {
+        return theSeed + ensureNumber(salt);
+    }
+    return theSeed;
+}
+
+function choiceFromDirichlet(cand, dirDist, seed) {
+    if (cand.length !== dirDist.length) {
+        throw new Error('cand array and dirDist array must have equal length');
+    }
+    const theSeed = normalizeSeed(seed);
+    const mt = new KnuthTAOCP2002(theSeed);
+    const x = mt.unif_rand(1);
+    let prevSum = 0;
+    let nextSum = 0;
+    for (let index = 0; index < dirDist.length; index += 1) {
+        nextSum += dirDist[index];
+        if (x > prevSum && x < nextSum) {
+            return cand[index];
+        }
+        prevSum = nextSum;
+    }
+    return undefined;
+}
+
+/**
+ * Returns a choice from an array selected using a draw from
+ * a seeded dirichlet. The choice has a random time-based seed.
+ * @param {Array<any>} cand
+ * @param {number} alpha
+ * @param {string} seed
+ * @param {string} salt
+ * @return {any}
+ */
+function dChoice(cand, alpha, seed) {
+    const dirichletDraw = seededDirichlet(alpha, cand.length, seed);
+    return choiceFromDirichlet(cand, dirichletDraw, timeseed());
+}
+
+
 // If this is run as the main script
 if (require.main === module) {
     MODULE_DEBUG = true;
     const seed = 100;
     const numDimensions = 4;
     for (let alpha = 0.001; alpha < 200; alpha *= 10) {
-        const sample = seededDirichlet(seed, alpha, numDimensions);
-        log(`seededDirichlet(${seed}, ${alpha}, ${numDimensions}) = ${sample}`);
+        const sample = seededDirichlet(alpha, numDimensions, seed);
+        log(`seededDirichlet(${alpha}, ${numDimensions}, ${seed}) = ${sample}`);
     }
 
-    const dirDist = seededDirichlet(seed, 1, 5);
+    const dirDist = seededDirichlet(1, 5, seed);
     const cand = ['kyle', 'anjani', 'kathryn', 'sharon', 'kerwin'];
     for (let index = 0; index < 10; index += 1) {
         const choice = choiceFromDirichlet(cand, dirDist);
@@ -100,9 +137,11 @@ if (require.main === module) {
     }
 }
 
-function uChoice(arr) {
+function uChoice(arr, seed) {
     // Choice from uniform random, no seed
-    return arr[Math.floor(Math.random() * arr.length)];
+    const mt = new KnuthTAOCP2002(normalizeSeed(seed));
+    const x = mt.unif_rand(1);
+    return arr[Math.floor(x * arr.length)];
 }
 
 module.exports = {
@@ -112,4 +151,7 @@ module.exports = {
     sum,
     dChoice,
     uChoice,
+    ensureNumber,
+    normalizeSeed,
+    addSaltToSeed,
 };
