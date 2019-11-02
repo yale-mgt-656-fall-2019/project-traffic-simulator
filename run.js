@@ -23,11 +23,9 @@ async function runForSubmission(sub) {
 async function runForSubmissions(subs) {
     for (let index = 0; index < subs.length; index += 1) {
         const sub = subs[index];
-        if (sub.url.includes('citadel')) {
-            if (validator.isURL(sub.url)) {
-                // eslint-disable-next-line no-await-in-loop
-                await runForSubmission(sub);
-            }
+        if (validator.isURL(sub.url)) {
+            // eslint-disable-next-line no-await-in-loop
+            await runForSubmission(sub);
         }
     }
 }
