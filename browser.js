@@ -1,9 +1,13 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+// add stealth plugin and use defaults (all evasion techniques)
+const pluginStealth = require('puppeteer-extra-plugin-stealth');
 const {
     dChoice,
     uChoice,
     addSaltToSeed,
 } = require('./stats.js');
+
+puppeteer.use(pluginStealth());
 
 // if (!process.env.DEVELOPMENT && require.main === module) {
 //     console.log = () => {};
