@@ -28,7 +28,7 @@ async function makeDonation(page, donationPreference, donationProbability, scree
 
     let p = donationProbability;
     const donationText = await page.$eval(donationSelector, (el) => el.text);
-    console.log('Donation text:', donationText);
+    console.log('Donation text:', donationText.trim());
 
     // Users for this particular team will have a preference -- they are
     // more likely to donate if they see one of the following soliciations
@@ -160,12 +160,19 @@ async function visitSite(
     const donationPreference = uChoice(donationTextOptions, seed);
     console.log(`Donation preference: ${donationPreference}`);
 
-    const page = await browser.newPage();
-    const response = await page.goto(targetURL, {
-        timeout: 10000,
-        waitUntil: 'networkidle2',
-        referrer,
-    });
+    let page;
+    let response;
+    try {
+        page = await browser.newPage();
+        response = await page.goto(targetURL, {
+            timeout: 10000,
+            waitUntil: 'networkidle2',
+            referrer,
+        });
+    } catch (e) {
+        console.error(`Error opening ${targetURL}. ${encodeURIComponent}`);
+        return;
+    }
     if (response.status() !== 200) {
         console.log('Site is down, quitting');
         return;
