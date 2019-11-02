@@ -1,7 +1,8 @@
 const puppeteer = require('puppeteer');
 const {
     dChoice,
-    uChoice
+    uChoice,
+    addSaltToSeed,
 } = require('./stats.js');
 
 // if (!process.env.DEVELOPMENT && require.main === module) {
@@ -17,7 +18,7 @@ async function takeScreenshot(page, path) {
 }
 
 async function makeDonation(page, donationPreference, donationProbability, screenshots) {
-    const donationSelector = 'a#donate';
+    const donationSelector = 'a[href*="donate"]';
     const donationLink = await page.$(donationSelector);
     if (!donationLink) {
         console.log('Found donation link: false');
@@ -42,24 +43,36 @@ async function makeDonation(page, donationPreference, donationProbability, scree
         p *= 0.5;
     }
     console.log('Donation preference matches: ', matchesPreference);
-    console.log('Donation probability:', Math.min(p, 1.0));
+    console.log(`Donation probability: ${Math.min(p, 1.0)} (${p})`);
     if (Math.random() > p) {
         console.log('Made donation: false');
         return;
     }
     console.log('Made donation: true');
     try {
-        await Promise.all([donationLink.click(), page.waitForNavigation()]);
+        const results = await Promise.all([
+            donationLink.click(),
+            page.waitForNavigation({
+                timeout: 5000,
+                waitUntil: 'networkidle2',
+            }),
+        ]);
+        const response = results[1];
+        if (response.status() !== 200) {
+            console.log('Did not get 200 clicking on donation link');
+            return;
+        }
         if (screenshots) {
             await takeScreenshot(page, 'donation-screenshot.png');
         }
     } catch (error) {
-        console.error(error);
+        console.error(`Could not click donation link ${error}`);
     }
 }
 
 async function visitEventDetail(
     page,
+    referrer,
     teamName,
     clickThroughProbability,
     donationProbability,
@@ -67,21 +80,27 @@ async function visitEventDetail(
     screenshots,
 ) {
     console.log('Viewing', page.url());
-    let eventLinks;
+    const eventLinkSelector = 'a[href^="/events/"]';
     try {
-        eventLinks = await page.$$('ul a[href^="/events/"]');
+        const filterLinks = (links) => {
+            const validLinks = links.filter((el) => /\d+$/.test(el.href));
+            if (validLinks.length > 0) {
+                const selectedElement = validLinks[Math.floor(Math.random() * validLinks.length)];
+                selectedElement.setAttribute('id', 'event-to-click');
+            }
+        };
+        await page.$$eval(eventLinkSelector, filterLinks);
     } catch (e) {
         console.warn(e);
-        eventLinks = [];
     }
 
     if (screenshots) {
         await takeScreenshot(page, 'homepage-screenshot.png');
     }
-    console.log('Events found:', eventLinks.length);
-    if (eventLinks.length === 0) {
-        return;
-    }
+    // console.log('Events found:', eventLinks.length);
+    // if (eventLinks.length === 0) {
+    //     return;
+    // }
     const p = clickThroughProbability;
     console.log('Click through probability:', p);
     if (Math.random() > p) {
@@ -89,9 +108,20 @@ async function visitEventDetail(
         return;
     }
     console.log('Clicked on event: true');
-    const link = uChoice(eventLinks);
+    // const link = uChoice(eventLinks);
     try {
-        await Promise.all([link.click(), page.waitForNavigation()]);
+        const results = await Promise.all([
+            page.click('#event-to-click'),
+            page.waitForNavigation({
+                timeout: 5000,
+                waitUntil: 'networkidle2',
+            }),
+        ]);
+        const response = results[1];
+        if (response.status() !== 200) {
+            console.log('Did not get 200 clicking on event detail link');
+            return;
+        }
         console.log('Viewing:', page.url());
         if (screenshots) {
             await takeScreenshot(page, 'event-detail-screenshot.png');
@@ -115,7 +145,6 @@ async function visitSite(
     donationProbability,
     screenshots,
 ) {
-    const page = await browser.newPage();
 
     const referrers = [
         'http://som.yale.edu/',
@@ -125,12 +154,26 @@ async function visitSite(
         'http://search.yale.edu/',
     ];
     const alpha = 1;
-    const referrer = dChoice(referrers, alpha, teamName, salt);
+    const seed = addSaltToSeed(teamName, salt);
+    const referrer = dChoice(referrers, alpha, seed);
     const donationTextOptions = ['donate', 'support'];
-    const donationPreference = dChoice(teamName, salt, donationTextOptions, alpha);
-    await visitEventDetail(
+    const donationPreference = uChoice(donationTextOptions, seed);
+    console.log(`Donation preference: ${donationPreference}`);
+
+    const page = await browser.newPage();
+    const response = await page.goto(targetURL, {
+        timeout: 10000,
+        waitUntil: 'networkidle2',
         referrer,
+    });
+    if (response.status() !== 200) {
+        console.log('Site is down, quitting');
+        return;
+    }
+
+    await visitEventDetail(
         page,
+        referrer,
         teamName,
         clickThroughProbability,
         donationProbability,

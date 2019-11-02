@@ -101,6 +101,13 @@ function choiceFromDirichlet(cand, dirDist, seed) {
     return undefined;
 }
 
+function printDirichletChoice(cand, dirDist, choice) {
+    for (let j = 0; j < dirDist.length; j += 1) {
+        const chosen = cand[j] === choice ? '***' : '';
+        console.log(`${dirDist[j]} - ${cand[j]} ${chosen}`);
+    }
+}
+
 /**
  * Returns a choice from an array selected using a draw from
  * a seeded dirichlet. The choice has a random time-based seed.
@@ -112,9 +119,17 @@ function choiceFromDirichlet(cand, dirDist, seed) {
  */
 function dChoice(cand, alpha, seed) {
     const dirichletDraw = seededDirichlet(alpha, cand.length, seed);
-    return choiceFromDirichlet(cand, dirichletDraw, timeseed());
+    const choice = choiceFromDirichlet(cand, dirichletDraw, timeseed());
+    printDirichletChoice(cand, dirichletDraw, choice);
+    return choice;
 }
 
+function uChoice(arr, seed) {
+    // Choice from uniform random, no seed
+    const mt = new KnuthTAOCP2002(normalizeSeed(seed));
+    const x = mt.unif_rand(1);
+    return arr[Math.floor(x * arr.length)];
+}
 
 // If this is run as the main script
 if (require.main === module) {
@@ -130,19 +145,10 @@ if (require.main === module) {
     const cand = ['kyle', 'anjani', 'kathryn', 'sharon', 'kerwin'];
     for (let index = 0; index < 10; index += 1) {
         const choice = choiceFromDirichlet(cand, dirDist);
-        for (let j = 0; j < dirDist.length; j += 1) {
-            const chosen = cand[j] === choice ? '***' : '';
-            log(`${dirDist[j]} - ${cand[j]} ${chosen}`);
-        }
+        printDirichletChoice(cand, dirDist, choice);
     }
 }
 
-function uChoice(arr, seed) {
-    // Choice from uniform random, no seed
-    const mt = new KnuthTAOCP2002(normalizeSeed(seed));
-    const x = mt.unif_rand(1);
-    return arr[Math.floor(x * arr.length)];
-}
 
 module.exports = {
     choiceFromDirichlet,
@@ -154,4 +160,5 @@ module.exports = {
     ensureNumber,
     normalizeSeed,
     addSaltToSeed,
+    printDirichletChoice,
 };
