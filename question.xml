@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QuestionForm xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2017-11-06/QuestionForm.xsd">
+  <Question>
+    <QuestionIdentifier>1</QuestionIdentifier>
+    <QuestionContent>
+      <Text>Is the following picture taken outdoors or indoors?</Text>
+      <Binary>
+      <MimeType>
+        <Type>image</Type>
+        <SubType>jpg</SubType>
+      </MimeType>
+      <!-- We are going to replace the placeholder inside DataURL below with a link to an actual image URL in our Ruby code -->
+      <DataURL>%s</DataURL>
+       <AltText>The image that needs to be classified.</AltText>
+    </Binary>
+    </QuestionContent>
+    <AnswerSpecification>
+      <SelectionAnswer>
+        <MinSelectionCount>1</MinSelectionCount>
+        <MaxSelectionCount>1</MaxSelectionCount>
+        <StyleSuggestion>radiobutton</StyleSuggestion>
+        <Selections>
+          <Selection>
+            <SelectionIdentifier>outdoors</SelectionIdentifier>
+            <Text>Outdoors</Text>
+          </Selection>
+          <Selection>
+            <SelectionIdentifier>indoors</SelectionIdentifier>
+            <Text>Indoors</Text>
+          </Selection>
+		  <Selection>
+            <SelectionIdentifier>noneoftheabove</SelectionIdentifier>
+            <Text>None of the Above</Text>
+          </Selection>
+        </Selections>
+      </SelectionAnswer>
+    </AnswerSpecification>
+  </Question>
+</QuestionForm>
