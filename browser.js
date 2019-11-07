@@ -76,7 +76,7 @@ async function makeDonation(page, donationPreference, donationProbability, scree
 
 async function visitEventDetail(
     page,
-    referrer,
+    referer,
     teamName,
     clickThroughProbability,
     donationProbability,
@@ -150,7 +150,7 @@ async function visitSite(
     screenshots,
 ) {
 
-    const referrers = [
+    const referers = [
         'http://som.yale.edu/',
         'http://divinity.yale.edu/',
         'http://medicine.yale.edu/',
@@ -159,7 +159,7 @@ async function visitSite(
     ];
     const alpha = 1;
     const seed = addSaltToSeed(teamName, salt);
-    const referrer = dChoice(referrers, alpha, seed);
+    const referer = dChoice(referers, alpha, seed);
     const donationTextOptions = ['donate', 'support'];
     const donationPreference = uChoice(donationTextOptions, seed);
     console.log(`Donation preference: ${donationPreference}`);
@@ -171,7 +171,7 @@ async function visitSite(
         response = await page.goto(targetURL, {
             timeout: 10000,
             waitUntil: 'networkidle2',
-            referrer,
+            referer,
         });
     } catch (e) {
         console.error(`Error opening ${targetURL}. ${encodeURIComponent}`);
@@ -184,7 +184,7 @@ async function visitSite(
 
     await visitEventDetail(
         page,
-        referrer,
+        referer,
         teamName,
         clickThroughProbability,
         donationProbability,
