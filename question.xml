@@ -1,39 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<QuestionForm xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2017-11-06/QuestionForm.xsd">
+<QuestionForm
+xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2017-11-06/QuestionForm.xsd">
+  <Overview>
+    <Title>Rating the designs of an event RSVP website</Title>
+    <Text>
+      {% filter replace("\n", " ") %}
+      You are helping me evaluate the website designs of students
+      in a class. The students each designed a website that displays
+      a list of events (it's a website like EventBrite). I'd like
+      you to rate a {{designs|length}} of those designs. There are five designs 
+      below and I'd like you to give each a rating 1-10.
+      {% endfilter %}
+    </Text>
+  </Overview>
+{% for design in designs %}
   <Question>
-    <QuestionIdentifier>1</QuestionIdentifier>
-    <QuestionContent>
-      <Text>Is the following picture taken outdoors or indoors?</Text>
-      <Binary>
-      <MimeType>
-        <Type>image</Type>
-        <SubType>jpg</SubType>
-      </MimeType>
-      <!-- We are going to replace the placeholder inside DataURL below with a link to an actual image URL in our Ruby code -->
-      <DataURL>%s</DataURL>
-       <AltText>The image that needs to be classified.</AltText>
-    </Binary>
-    </QuestionContent>
+      <QuestionIdentifier>{{design.nickname}}</QuestionIdentifier>
+      <QuestionContent>
+        <Text>Please tell us how you rate the design of this website</Text>
+        <Binary>
+        <MimeType>
+          <Type>image</Type>
+          <SubType>jpg</SubType>
+        </MimeType>
+        <!-- We are going to replace the placeholder inside DataURL below with a link to an actual image URL in our Ruby code -->
+        <DataURL>{{design.image}}</DataURL>
+        <AltText>Design "{{design.nickanme}}"</AltText>
+      </Binary>
+      </QuestionContent>
     <AnswerSpecification>
       <SelectionAnswer>
         <MinSelectionCount>1</MinSelectionCount>
         <MaxSelectionCount>1</MaxSelectionCount>
         <StyleSuggestion>radiobutton</StyleSuggestion>
         <Selections>
+          {% for grade in ['A', 'B', 'C', 'D', 'F'] %}
           <Selection>
-            <SelectionIdentifier>outdoors</SelectionIdentifier>
-            <Text>Outdoors</Text>
+            <SelectionIdentifier>{{grade}}</SelectionIdentifier>
+            <Text>{{grade}}{% if loop.last %} (Terrible design) {% endif %}{% if loop.first %} (Fantastic design) {% endif %}</Text>
           </Selection>
-          <Selection>
-            <SelectionIdentifier>indoors</SelectionIdentifier>
-            <Text>Indoors</Text>
-          </Selection>
-		  <Selection>
-            <SelectionIdentifier>noneoftheabove</SelectionIdentifier>
-            <Text>None of the Above</Text>
-          </Selection>
+          {% endfor %}
         </Selections>
       </SelectionAnswer>
     </AnswerSpecification>
   </Question>
+{% endfor %}
 </QuestionForm>

@@ -19,4 +19,8 @@ module.exports = {
             stddev: getEnv('DONATION_PROB_STDDEV'),
         },
     },
+    classNumber: getEnv('CLASS_NUMBER'),
+    awsS3Bucket: getEnv('AWS_S3_BUCKET'),
+    awsAccessKeyId: getEnv('AWS_ACCESS_KEY_ID'),
+    secretAccessKey: getEnv('AWS_SECRET_ACCESS_KEY'),
 };

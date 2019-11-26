@@ -36,3 +36,9 @@ Something like the following:
 ```
 env $(cat .env.660 | xargs) node ./run.js
 ```
+
+For screenshots
+
+```
+env $(cat .env.656 | xargs) node ./screenshots.js
+```
