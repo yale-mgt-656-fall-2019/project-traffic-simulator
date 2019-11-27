@@ -2,7 +2,7 @@ const puppeteer = require("puppeteer");
 const validator = require("validator");
 const AWS = require("./aws.js");
 const config = require("./config.js");
-const { getSubmissions } = require("./util.js");
+const { getSubmissions, pingURLs } = require("./util.js");
 
 const s3 = new AWS.S3();
 
@@ -53,6 +53,7 @@ async function recordScreenShots(page) {
     let submissions;
     try {
         submissions = await getSubmissions(config.classURL, config.jwt);
+        await pingURLs(submissions.map(s => s.url));
         await runForSubmissions(page, submissions);
     } catch (e) {
         console.error(e);
