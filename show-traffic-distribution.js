@@ -35,7 +35,7 @@ function determineTrafficSources(teamNames) {
         const thisTeamSources = sources.get(teamName);
 
         const numSamples = 10000;
-        for (let iteration = 0; iteration < numSamples; iteration++) {
+        for (let iteration = 0; iteration < numSamples; iteration += 1) {
             const profile = browser.getVisitorProfile(teamName);
             const referer = hostnameForURL(profile.referer);
             const currentCount = thisTeamSources.get(referer) || 0;
@@ -57,9 +57,9 @@ function determineTrafficSources(teamNames) {
  * @returns {String} A CSV-formatted output
  */
 function formatOutput(sourcesByTeam, uniqueReferers) {
-    let csvOutput = "teamName," + uniqueReferers.join(",") + "\n";
+    let csvOutput = `teamName,${uniqueReferers.join(",")}\n`;
     sourcesByTeam.forEach((thisTeamSources, teamName) => {
-        csvOutput += teamName + ",";
+        csvOutput += `${teamName},`;
         csvOutput += uniqueReferers.map(r => thisTeamSources.get(r)).join(",");
         csvOutput += "\n";
     });
