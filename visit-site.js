@@ -1,8 +1,8 @@
-const minimist = require('minimist');
-const browser = require('./browser.js');
+const minimist = require("minimist");
+const browser = require("./browser.js");
 
 function usage() {
-    console.log('node ./visit-site.js TEAM_NICKNAME URL');
+    console.log("node ./visit-site.js TEAM_NICKNAME URL");
 }
 
 (() => {
@@ -15,9 +15,9 @@ function usage() {
         usage();
         process.exit();
     }
-    console.log('Running with');
-    console.log('team nickname: ', args._[0]);
-    console.log('url: ', args._[1]);
+    console.log("Running with");
+    console.log("team nickname: ", args._[0]);
+    console.log("url: ", args._[1]);
     // console.log('salt: ', args.s);
     // console.log('clickThroughProbability: ', args.c);
     // console.log('donationProbability: ', args.d);

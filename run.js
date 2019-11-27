@@ -1,13 +1,9 @@
-const validator = require('validator');
-const config = require('./config.js');
-const util = require('./util.js');
+const validator = require("validator");
+const config = require("./config.js");
+const util = require("./util.js");
 
-const {
-    getSubmissions,
-} = require('./util.js');
-const {
-    runForURL,
-} = require('./browser.js');
+const { getSubmissions } = require("./util.js");
+const { runForURL } = require("./browser.js");
 
 async function runForSubmission(sub) {
     return runForURL(
@@ -16,7 +12,7 @@ async function runForSubmission(sub) {
         config.salt,
         config.probabilities.clickThrough.mean,
         config.probabilities.donation.mean,
-        false,
+        false
     );
 }
 
@@ -33,11 +29,13 @@ async function runForSubmissions(subs) {
 (async () => {
     let submissions;
     try {
-        submissions = util.shuffle(await getSubmissions(config.classURL, config.jwt));
+        submissions = util.shuffle(
+            await getSubmissions(config.classURL, config.jwt)
+        );
         runForSubmissions(submissions);
     } catch (e) {
         console.error(e);
-        console.error('Could not fetch submissions');
+        console.error("Could not fetch submissions");
         process.exit();
     }
 })();

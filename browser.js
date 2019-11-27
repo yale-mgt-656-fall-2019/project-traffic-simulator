@@ -1,11 +1,7 @@
-const puppeteer = require('puppeteer-extra');
+const puppeteer = require("puppeteer-extra");
 // add stealth plugin and use defaults (all evasion techniques)
-const pluginStealth = require('puppeteer-extra-plugin-stealth');
-const {
-    dChoice,
-    uChoice,
-    addSaltToSeed,
-} = require('./stats.js');
+const pluginStealth = require("puppeteer-extra-plugin-stealth");
+const { dChoice, uChoice, addSaltToSeed } = require("./stats.js");
 
 puppeteer.use(pluginStealth());
 
@@ -15,59 +11,66 @@ puppeteer.use(pluginStealth());
 // }
 
 async function takeScreenshot(page, path) {
-    console.log('Saving screenshot to', path, 'for URL: ', page.url());
+    console.log("Saving screenshot to", path, "for URL: ", page.url());
     return page.screenshot({
-        path,
+        path
     });
 }
 
-async function makeDonation(page, donationPreference, donationProbability, screenshots) {
+async function makeDonation(
+    page,
+    donationPreference,
+    donationProbability,
+    screenshots
+) {
     const donationSelector = 'a[href*="donate"]';
     const donationLink = await page.$(donationSelector);
     if (!donationLink) {
-        console.log('Found donation link: false');
+        console.log("Found donation link: false");
         return;
     }
-    console.log('Found donation link: true');
+    console.log("Found donation link: true");
 
     let p = donationProbability;
-    const donationText = await page.$eval(donationSelector, (el) => el.text);
-    console.log('Donation text:', donationText.trim());
+    const donationText = await page.$eval(donationSelector, el => el.text);
+    console.log("Donation text:", donationText.trim());
 
     // Users for this particular team will have a preference -- they are
     // more likely to donate if they see one of the following soliciations
     // to donate. Here, we're checking if the current solication matches
     // the visitor's preference and we're increasing the probability of
     // donating if that is the case.
-    console.log('Donation preference:', donationPreference);
-    const matchesPreference = donationText.toLowerCase().includes(donationPreference);
+    console.log("Donation preference:", donationPreference);
+    const matchesPreference = donationText
+        .toLowerCase()
+        .includes(donationPreference);
     if (matchesPreference) {
         p *= 1.5;
     } else {
         p *= 0.5;
     }
-    console.log('Donation preference matches: ', matchesPreference);
+    console.log("Donation preference matches: ", matchesPreference);
     console.log(`Donation probability: ${Math.min(p, 1.0)} (${p})`);
     if (Math.random() > p) {
-        console.log('Made donation: false');
+        console.log("Made donation: false");
         return;
     }
-    console.log('Made donation: true');
+    console.log("Made donation: true");
     try {
         const results = await Promise.all([
             donationLink.click(),
             page.waitForNavigation({
                 timeout: 5000,
-                waitUntil: 'networkidle2',
-            }),
+                waitUntil: "networkidle2"
+            })
         ]);
         const response = results[1];
         if (response.status() !== 200) {
-            console.log('Did not get 200 clicking on donation link');
+            console.log("Did not get 200 clicking on donation link");
             return;
         }
         if (screenshots) {
-            await takeScreenshot(page, 'donation-screenshot.png');
+            await takeScreenshot(page, "donation-screenshot.png");
         }
     } catch (error) {
         console.error(`Could not click donation link ${error}`);
@@ -81,16 +84,17 @@ async function visitEventDetail(
     clickThroughProbability,
     donationProbability,
     donationPreference,
-    screenshots,
+    screenshots
 ) {
-    console.log('Viewing', page.url());
+    console.log("Viewing", page.url());
     const eventLinkSelector = 'a[href^="/events/"]';
     try {
-        const filterLinks = (links) => {
-            const validLinks = links.filter((el) => /\d+$/.test(el.href));
+        const filterLinks = links => {
+            const validLinks = links.filter(el => /\d+$/.test(el.href));
             if (validLinks.length > 0) {
-                const selectedElement = validLinks[Math.floor(Math.random() * validLinks.length)];
-                selectedElement.setAttribute('id', 'event-to-click');
+                const selectedElement =
+                    validLinks[Math.floor(Math.random() * validLinks.length)];
+                selectedElement.setAttribute("id", "event-to-click");
             }
         };
         await page.$$eval(eventLinkSelector, filterLinks);
@@ -99,39 +103,44 @@ async function visitEventDetail(
     }
 
     if (screenshots) {
-        await takeScreenshot(page, 'homepage-screenshot.png');
+        await takeScreenshot(page, "homepage-screenshot.png");
     }
     // console.log('Events found:', eventLinks.length);
     // if (eventLinks.length === 0) {
     //     return;
     // }
     const p = clickThroughProbability;
-    console.log('Click through probability:', p);
+    console.log("Click through probability:", p);
     if (Math.random() > p) {
-        console.log('Clicked on event: false');
+        console.log("Clicked on event: false");
         return;
     }
-    console.log('Clicked on event: true');
+    console.log("Clicked on event: true");
     // const link = uChoice(eventLinks);
     try {
         const results = await Promise.all([
-            page.click('#event-to-click'),
+            page.click("#event-to-click"),
             page.waitForNavigation({
                 timeout: 5000,
-                waitUntil: 'networkidle2',
-            }),
+                waitUntil: "networkidle2"
+            })
         ]);
         const response = results[1];
         if (response.status() !== 200) {
-            console.log('Did not get 200 clicking on event detail link');
+            console.log("Did not get 200 clicking on event detail link");
             return;
         }
-        console.log('Viewing:', page.url());
+        console.log("Viewing:", page.url());
         if (screenshots) {
-            await takeScreenshot(page, 'event-detail-screenshot.png');
+            await takeScreenshot(page, "event-detail-screenshot.png");
         }
         try {
-            await makeDonation(page, donationPreference, donationProbability, screenshots);
+            await makeDonation(
+                page,
+                donationPreference,
+                donationProbability,
+                screenshots
+            );
         } catch (error) {
             console.log(error);
         }
@@ -147,20 +156,19 @@ async function visitSite(
     salt,
     clickThroughProbability,
     donationProbability,
-    screenshots,
+    screenshots
 ) {
-
     const referrers = [
-        'http://som.yale.edu/',
-        'http://divinity.yale.edu/',
-        'http://medicine.yale.edu/',
-        'http://law.yale.edu/',
-        'http://search.yale.edu/',
+        "http://som.yale.edu/",
+        "http://divinity.yale.edu/",
+        "http://medicine.yale.edu/",
+        "http://law.yale.edu/",
+        "http://search.yale.edu/"
     ];
     const alpha = 1;
     const seed = addSaltToSeed(teamName, salt);
     const referrer = dChoice(referrers, alpha, seed);
-    const donationTextOptions = ['donate', 'support'];
+    const donationTextOptions = ["donate", "support"];
     const donationPreference = uChoice(donationTextOptions, seed);
     console.log(`Donation preference: ${donationPreference}`);
 
@@ -170,15 +178,15 @@ async function visitSite(
         page = await browser.newPage();
         response = await page.goto(targetURL, {
             timeout: 10000,
-            waitUntil: 'networkidle2',
-            referrer,
+            waitUntil: "networkidle2",
+            referrer
         });
     } catch (e) {
         console.error(`Error opening ${targetURL}. ${encodeURIComponent}`);
         return;
     }
     if (response.status() !== 200) {
-        console.log('Site is down, quitting');
+        console.log("Site is down, quitting");
         return;
     }
 
@@ -189,7 +197,7 @@ async function visitSite(
         clickThroughProbability,
         donationProbability,
         donationPreference,
-        screenshots,
+        screenshots
     );
 }
 
@@ -199,11 +207,11 @@ async function runForURL(
     salt,
     clickThroughProbability,
     donationProbability,
-    screenshots,
+    screenshots
 ) {
-    console.log('----------------');
-    console.log('Team:', teamName);
-    console.log('Url:', targetURL);
+    console.log("----------------");
+    console.log("Team:", teamName);
+    console.log("Url:", targetURL);
     const browser = await puppeteer.launch();
     await visitSite(
         browser,
@@ -212,12 +220,12 @@ async function runForURL(
         salt,
         clickThroughProbability,
         donationProbability,
-        screenshots,
+        screenshots
     );
     await browser.close();
-    console.log('----------------');
+    console.log("----------------");
 }
 
 module.exports = {
-    runForURL,
+    runForURL
 };
