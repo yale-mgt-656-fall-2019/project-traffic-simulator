@@ -6,7 +6,7 @@ const { getSubmissions, pingURLs } = require("./util.js");
 
 const s3 = new AWS.S3();
 
-async function uploadScreenshotToS3(page, url, filename) {
+async function uploadScreenshotToS3(page, url, filename, copies) {
     await page.goto(url, {
         timeout: 5000,
         waitUntil: "networkidle2"
@@ -14,15 +14,38 @@ async function uploadScreenshotToS3(page, url, filename) {
     const screenshot = await page.screenshot({
         timeout: 10000
     });
+    const bucket = process.env.AWS_S3_BUCKET;
+    const acl = "public-read-write";
+    const contentType = "image/png";
     const params = {
         Key: filename,
         Body: screenshot,
-        Bucket: process.env.AWS_S3_BUCKET,
-        ACL: "public-read-write",
-        ContentType: "image/png"
+        Bucket: bucket,
+        ACL: acl,
+        ContentType: contentType
     };
-    console.log("saving...");
-    return s3.putObject(params).promise();
+    await s3.putObject(params).promise();
+    const copyObjPromises = copies.map(f =>
+        s3
+            .copyObject({
+                CopySource: `${bucket}/${filename}`,
+                Bucket: bucket,
+                Key: f,
+                ACL: acl,
+                ContentType: contentType
+            })
+            .promise()
+    );
+    return Promise.all(copyObjPromises);
+}
+
+function getTodayDateSuffix() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = `${today.getMonth() + 1}`.padStart(2, 0);
+    const day = `${today.getDate()}`.padStart(2, 0);
+    const stringDate = [year, month, day].join("/");
+    return stringDate;
 }
 
 async function runForSubmissions(page, subs) {
@@ -31,11 +54,15 @@ async function runForSubmissions(page, subs) {
         console.log(`Recording screenshot for ${sub.teamNickname}`);
         if (validator.isURL(sub.url)) {
             try {
+                const ds = getTodayDateSuffix();
                 // eslint-disable-next-line no-await-in-loop
                 await uploadScreenshotToS3(
                     page,
                     sub.url,
-                    `screenshots/${config.classNumber}/${sub.teamNickname}.png`
+                    `screenshots/${config.classNumber}/${sub.teamNickname}.png`,
+                    [
+                        `screenshots/${config.classNumber}/${ds}/${sub.teamNickname}.png`
+                    ]
                 );
                 console.log("done");
             } catch (e) {

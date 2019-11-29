@@ -1,8 +1,8 @@
 const nunjucks = require("nunjucks");
 const AWS = require("./aws.js");
 
-const endpoint = "https://mturk-requester-sandbox.us-east-1.amazonaws.com";
-// endpoint = 'https://mturk-requester.us-east-1.amazonaws.com';
+// const endpoint = "https://mturk-requester-sandbox.us-east-1.amazonaws.com";
+const endpoint = "https://mturk-requester.us-east-1.amazonaws.com";
 
 const mturk = new AWS.MTurk({
     endpoint
@@ -10,25 +10,27 @@ const mturk = new AWS.MTurk({
 
 const designs = [
     {
-        nickname: "foo-bar",
+        nickname: "floral-light",
         image:
-            "https://multimedia-commons.s3-us-west-2.amazonaws.com/data/images/010/172/010172cbfc6b251a32b61cf7d3f4bc1.jpg"
+            "https://s3.amazonaws.com/files.656.mba/screenshots/656/floral-light.png"
     },
     {
-        nickname: "baz-bar",
+        nickname: "whithered-castle",
         image:
-            "https://multimedia-commons.s3-us-west-2.amazonaws.com/data/images/010/197/010197d8079b056d0dfabdf62ced6c0.jpg"
+            "https://s3.amazonaws.com/files.656.mba/screenshots/656/withered-castle.png"
     }
 ];
 
 const myHIT = {
     Title: "Rate website designs of students",
+    AutoApprovalDelayInSeconds: 30,
+    Keywords: "grading, images, design",
     Description:
         "Our students are designing clones of EventBrite and we hope you will rate them",
     MaxAssignments: 1,
     LifetimeInSeconds: 3600 / 2,
     AssignmentDurationInSeconds: 200,
-    Reward: "0.05",
+    Reward: "0.15",
     Question: nunjucks.render("question.xml", {
         designs
     }),

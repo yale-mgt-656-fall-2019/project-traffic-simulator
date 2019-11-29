@@ -9,7 +9,7 @@ xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2017-11-
       in a class. The students each designed a website that displays
       a list of events (it's a website like EventBrite). I'd like
       you to rate a {{designs|length}} of those designs. There are five designs 
-      below and I'd like you to give each a rating 1-10.
+      below and I'd like you to give each a rating A, B, C, D, or F.
       {% endfilter %}
     </Text>
   </Overview>
