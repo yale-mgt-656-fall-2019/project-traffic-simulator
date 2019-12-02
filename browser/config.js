@@ -5,6 +5,17 @@ function getEnv(key) {
     throw new Error(`Could not find ${key} in environment!`);
 }
 
+const chromeArgs = [
+    "--disable-dev-shm-usage",
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-gpu",
+    "--proxy-server='direct://'",
+    "--proxy-bypass-list=*",
+    "--disable-web-security",
+    "--disable-software-rasterizer"
+];
+
 module.exports = {
     jwt: getEnv("JWT"),
     classURL: getEnv("CLASS_URL"),
@@ -23,5 +34,6 @@ module.exports = {
     awsS3Bucket: getEnv("AWS_S3_BUCKET"),
     awsAccessKeyId: getEnv("AWS_ACCESS_KEY_ID"),
     secretAccessKey: getEnv("AWS_SECRET_ACCESS_KEY"),
-    databaseURL: getEnv("DATABASE_URL")
+    databaseURL: getEnv("DATABASE_URL"),
+    chromeArgs
 };

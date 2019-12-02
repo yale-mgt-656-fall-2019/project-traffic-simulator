@@ -97,7 +97,8 @@ module.exports = {
 if (require.main === module) {
     (async () => {
         const browser = await puppeteer.launch({
-            timeout: 30000
+            timeout: 30000,
+            args: config.chromeArgs
         });
         const page = await browser.newPage({
             timeout: 10000

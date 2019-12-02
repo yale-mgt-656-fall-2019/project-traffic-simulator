@@ -2,6 +2,7 @@ const puppeteer = require("puppeteer-extra");
 // add stealth plugin and use defaults (all evasion techniques)
 const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const { dChoice, uChoice, addSaltToSeed } = require("./stats.js");
+const config = require("./config.js");
 
 puppeteer.use(pluginStealth());
 
@@ -214,16 +215,7 @@ async function runForURL(
     console.log("Url:", targetURL);
     const browser = await puppeteer.launch({
         // executablePath: "/usr/bin/chromium-browser",
-        args: [
-            "--disable-dev-shm-usage",
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-gpu",
-            "--proxy-server='direct://'",
-            "--proxy-bypass-list=*",
-            "--disable-web-security",
-            "--disable-software-rasterizer"
-        ]
+        args: config.chromeArgs
     });
     await visitSite(
         browser,
