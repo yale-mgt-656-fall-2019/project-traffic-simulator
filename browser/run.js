@@ -2,7 +2,7 @@ const validator = require("validator");
 const config = require("./config.js");
 const util = require("./util.js");
 
-const { getSubmissions } = require("./util.js");
+const { getSubmissions, pingURLs } = require("./util.js");
 const { runForURL } = require("./browser.js");
 
 async function runForSubmission(sub) {
@@ -32,6 +32,7 @@ async function runForSubmissions(subs) {
         submissions = util.shuffle(
             await getSubmissions(config.classURL, config.jwt)
         );
+        await pingURLs(submissions.map(s => s.url));
         runForSubmissions(submissions);
     } catch (e) {
         console.error(e);

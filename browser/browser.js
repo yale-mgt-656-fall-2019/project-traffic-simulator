@@ -212,7 +212,19 @@ async function runForURL(
     console.log("----------------");
     console.log("Team:", teamName);
     console.log("Url:", targetURL);
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        // executablePath: "/usr/bin/chromium-browser",
+        args: [
+            "--disable-dev-shm-usage",
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-gpu",
+            "--proxy-server='direct://'",
+            "--proxy-bypass-list=*",
+            "--disable-web-security",
+            "--disable-software-rasterizer"
+        ]
+    });
     await visitSite(
         browser,
         teamName,
