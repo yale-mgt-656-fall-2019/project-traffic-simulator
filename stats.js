@@ -7,13 +7,11 @@ const {
     rng: {
         KnuthTAOCP2002,
         timeseed,
-        normal: {
-            AhrensDieter,
-        },
+        normal: { AhrensDieter },
     },
 } = require('lib-r-math.js');
 
-const sum = (x) => x.reduce((acc, el) => acc + el);
+const sum = x => x.reduce((acc, el) => acc + el);
 let MODULE_DEBUG = false;
 
 function log(...args) {
@@ -32,9 +30,9 @@ function log(...args) {
  * @return {Array<number>}
  */
 function randomDirichlet(gamma, alphas) {
-    const randGammas = alphas.map((x) => gamma.rgamma(1, x, 1));
+    const randGammas = alphas.map(x => gamma.rgamma(1, x, 1));
     const gammaSum = sum(randGammas);
-    return randGammas.map((x) => x / gammaSum);
+    return randGammas.map(x => x / gammaSum);
 }
 
 function seededDirichlet(alpha, numDimensions, seed) {
@@ -44,7 +42,6 @@ function seededDirichlet(alpha, numDimensions, seed) {
     const customGamma = Gamma(new AhrensDieter(mt));
     return randomDirichlet(customGamma, alphas);
 }
-
 
 function hashStringToInt(str) {
     let hash = 0;
@@ -120,7 +117,7 @@ function printDirichletChoice(cand, dirDist, choice) {
 function dChoice(cand, alpha, seed) {
     const dirichletDraw = seededDirichlet(alpha, cand.length, seed);
     const choice = choiceFromDirichlet(cand, dirichletDraw, timeseed());
-    printDirichletChoice(cand, dirichletDraw, choice);
+    // printDirichletChoice(cand, dirichletDraw, choice);
     return choice;
 }
 
@@ -148,7 +145,6 @@ if (require.main === module) {
         printDirichletChoice(cand, dirDist, choice);
     }
 }
-
 
 module.exports = {
     choiceFromDirichlet,

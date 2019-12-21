@@ -5,6 +5,7 @@ const {
     dChoice,
     uChoice,
     addSaltToSeed,
+    seededDirichlet,
 } = require('./stats.js');
 
 puppeteer.use(pluginStealth());
@@ -21,7 +22,12 @@ async function takeScreenshot(page, path) {
     });
 }
 
-async function makeDonation(page, donationPreference, donationProbability, screenshots) {
+async function makeDonation(
+    page,
+    donationPreference,
+    donationProbability,
+    screenshots,
+) {
     const donationSelector = 'a[href*="donate"]';
     const donationLink = await page.$(donationSelector);
     if (!donationLink) {
@@ -31,7 +37,7 @@ async function makeDonation(page, donationPreference, donationProbability, scree
     console.log('Found donation link: true');
 
     let p = donationProbability;
-    const donationText = await page.$eval(donationSelector, (el) => el.text);
+    const donationText = await page.$eval(donationSelector, el => el.text);
     console.log('Donation text:', donationText.trim());
 
     // Users for this particular team will have a preference -- they are
@@ -40,7 +46,9 @@ async function makeDonation(page, donationPreference, donationProbability, scree
     // the visitor's preference and we're increasing the probability of
     // donating if that is the case.
     console.log('Donation preference:', donationPreference);
-    const matchesPreference = donationText.toLowerCase().includes(donationPreference);
+    const matchesPreference = donationText
+        .toLowerCase()
+        .includes(donationPreference);
     if (matchesPreference) {
         p *= 1.5;
     } else {
@@ -86,10 +94,11 @@ async function visitEventDetail(
     console.log('Viewing', page.url());
     const eventLinkSelector = 'a[href^="/events/"]';
     try {
-        const filterLinks = (links) => {
-            const validLinks = links.filter((el) => /\d+$/.test(el.href));
+        const filterLinks = links => {
+            const validLinks = links.filter(el => /\d+$/.test(el.href));
             if (validLinks.length > 0) {
-                const selectedElement = validLinks[Math.floor(Math.random() * validLinks.length)];
+                const selectedElement =
+                    validLinks[Math.floor(Math.random() * validLinks.length)];
                 selectedElement.setAttribute('id', 'event-to-click');
             }
         };
@@ -131,13 +140,41 @@ async function visitEventDetail(
             await takeScreenshot(page, 'event-detail-screenshot.png');
         }
         try {
-            await makeDonation(page, donationPreference, donationProbability, screenshots);
+            await makeDonation(
+                page,
+                donationPreference,
+                donationProbability,
+                screenshots,
+            );
         } catch (error) {
             console.log(error);
         }
     } catch (e) {
         console.error(e);
     }
+}
+
+function getVisitorStats(teamName, salt) {
+    const referers = [
+        'http://som.yale.edu/',
+        'http://divinity.yale.edu/',
+        'http://medicine.yale.edu/',
+        'http://law.yale.edu/',
+        'http://search.yale.edu/',
+    ];
+    const alpha = 1.0;
+    const seed = addSaltToSeed(teamName, salt);
+    const referer = dChoice(referers, alpha, seed);
+    const dirichletDraw = seededDirichlet(alpha, referers.length, seed);
+    const donationTextOptions = ['donate', 'support'];
+    const donationPreference = uChoice(donationTextOptions, seed);
+    return {
+        seed,
+        referer,
+        referers,
+        dirichletDraw,
+        donationPreference,
+    };
 }
 
 async function visitSite(
@@ -149,19 +186,7 @@ async function visitSite(
     donationProbability,
     screenshots,
 ) {
-
-    const referers = [
-        'http://som.yale.edu/',
-        'http://divinity.yale.edu/',
-        'http://medicine.yale.edu/',
-        'http://law.yale.edu/',
-        'http://search.yale.edu/',
-    ];
-    const alpha = 1;
-    const seed = addSaltToSeed(teamName, salt);
-    const referer = dChoice(referers, alpha, seed);
-    const donationTextOptions = ['donate', 'support'];
-    const donationPreference = uChoice(donationTextOptions, seed);
+    const { referer, donationPreference } = getVisitorStats(teamName, salt);
     console.log(`Donation preference: ${donationPreference}`);
 
     let page;
@@ -220,4 +245,5 @@ async function runForURL(
 
 module.exports = {
     runForURL,
+    getVisitorStats,
 };
