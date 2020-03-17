@@ -5,7 +5,7 @@
     "main": "index.js",
     "dependencies": {
         "lib-r-math.js": "^1.0.86",
-        "minimist": "^1.2.0",
+        "minimist": "^1.2.2",
         "puppeteer": "^2.0.0",
         "validator": "^12.0.0",
         "axios": "^0.19.0",
